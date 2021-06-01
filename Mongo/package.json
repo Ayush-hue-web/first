@@ -1,5 +1,5 @@
 {
-  "type":"module",
+  "type": "module",
   "name": "mongo",
   "version": "1.0.0",
   "description": "",
@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "mongodb": "^3.6.9"
+    "mongodb": "^3.6.9",
+    "request": "^2.88.2"
   }
 }
