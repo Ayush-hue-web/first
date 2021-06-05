@@ -4,14 +4,18 @@ const signup=require('./mongose.js');
 const mongoose=require('mongoose');
 const jwt=require('jsonwebtoken');
 const fs=require('fs');
+const valid=require('validator');
 var token=null;
 
+
+//FUNCTION TO FETCH CURRENT LOGGED IN USER EMAIL
 var currUser=()=>{
     var tk=fs.readFileSync('tkn.json');
     tk=JSON.parse(tk);        
     const d=jwt.verify(tk,'friendly');
     return d.email;
 }
+
 
 const signques=[{
     type:'input',
@@ -35,7 +39,7 @@ const signques=[{
     {
        type:'input',
        name:'nick',
-       message:"please enter your name:"
+       message:"please enter your nickname:"
     }];
 
     const login=[
@@ -68,7 +72,8 @@ comd.command('signup').action(()=>{                                             
                     {   
                         if(found==null)
                         {
-                        const user=new signup({naam:answers.naam,email:answers.email,password:answers.pass,nickname:answers.nick});
+                            var nk=answers.nick;
+                        const user=new signup({naam:answers.naam,email:answers.email,password:answers.pass,nickname:nk});
                         user.save().then(()=>
                         {
                         
@@ -105,7 +110,8 @@ comd.command('signup').action(()=>{                                             
    {
           inq.prompt(login).then((answers)=>
           {
-             signup.findOne({nickname:answers.username},(error,usr)=>
+              var nk=answers.username;
+             signup.findOne({nickname:nk},(error,usr)=>
              {      
                  
                      if(usr!=null)
@@ -147,7 +153,7 @@ comd.command('signup').action(()=>{                                             
                    console.log(`Friends count: ${count}`);
                    for(var i=0;i<count;i++)
                      {
-                         console.log('@'+arr.friends[i].nick);
+                         console.log(arr.friends[i].nick);
                          console.log(arr.friends[i].nm);
                          console.log('\r\n');
                      }
@@ -157,7 +163,7 @@ comd.command('signup').action(()=>{                                             
                     console.log(`Pending requests: ${pending}`);
                     for(var i=0;i<pending;i++)
                       {
-                          console.log('@'+arr.requests[i].nick);
+                          console.log(arr.requests[i].nick);
                           console.log(arr.requests[i].nm);
                           console.log('\n');
                       }
@@ -170,33 +176,30 @@ comd.command('signup').action(()=>{                                             
   
 
 //COMMAND TO ACCEPT FRIEND REQUEST BEGINS....
-comd.command('pending_request--accept <nname>').action((nname)=>
+comd.command('pending_request--accept@ <nname>').action((nname)=>
     {
         var nckn=nname;
-        var nme;
-        var id;
-        var user1;
-        var curr=currUser();
-        console.log(curr);
+        var curr=currUser();  //FETCHES THE EMAIL ID OF LOGGED IN USER.
         signup.findOne({email:curr},(error,arr)=>
         {    
-            arr.requests.push({nm:'Ayush Nigam',nick:'ayush'});
-            console.log(arr);
              signup.findOne({nickname:nckn},(error,found)=>
              {        
 
                       //console.log(arr);
                       //nme=found.naam;
                       //id=found._id;
-                      var index=arr.requests.indexOf({nm:found.naam,nick:found.nickname});
+                      var index=arr.requests.indexOf({nm:found.naam,nick:found.nickname,eml:found.email});
                       if(index<0)
                         {
                             index=arr.requests.length+index;
                         }
-                        console.log(index);
                       arr.friends.push(arr.requests[index]);
                       arr.requests.splice(index,1);
                       //console.log("DONE");
+                      signup.findOneAndUpdate({email:curr},{friends:arr.friends,requests:arr.requests},()=>
+                      {
+                             console.log("ACCEPTED "+nckn);
+                      });
              });
               
         });
@@ -205,7 +208,80 @@ comd.command('pending_request--accept <nname>').action((nname)=>
     });
 //COMMAND TO ACCEPT FRIEND REQUEST FINISHED....
 
-comd.command('friends-filter')
+//COMMAND TO REJECT FRIEND REQUEST BEGINS....
+comd.command('pending_request--reject@ <nname>').action((nname)=>
+    {
+        var nckn=nname;
+        var curr=currUser();  //FETCHES THE EMAIL ID OF LOGGED IN USER.
+        signup.findOne({email:curr},(error,arr)=>
+        {    
+             signup.findOne({nickname:nckn},(error,found)=>
+             {        
+
+                      //console.log(arr);
+                      //nme=found.naam;
+                      //id=found._id;
+                      var index=arr.requests.indexOf({nm:found.naam,nick:found.nickname,eml:found.email});
+                      if(index<0)
+                        {
+                            index=arr.requests.length+index;
+                        }
+                      arr.requests.splice(index,1);
+                      //console.log("DONE");
+                      signup.findOneAndUpdate({email:curr},{requests:arr.requests},()=>
+                      {
+                             console.log("REJECTED "+nckn);
+                      });
+             });
+              
+        });
+       
+    });
+    //COMMAND TO REJECT FRIEND REQUEST FINISHED....
+
+//COMMAND TO FILTER FRIENDS USING EMAIL OR NICKNAME OR NAME BEGINS....
+comd.command('friends--filter <input>').action((input)=>
+   {
+       var curr=currUser();
+       var count=0;
+          if(valid.isEmail(input))
+            {
+                var length=curr.friends.length;
+                for(var i=0;i<length;i++)
+                 {
+                     if(curr.friends[i].eml===input)
+                        {
+                            count=count+1;
+                        }
+                 }
+            }
+            else if(input.charAt(0)==='@')
+            {
+                var length=curr.friends.length;
+                for(var i=0;i<length;i++)
+                 {
+                     if(curr.friends[i].nick===input)
+                        {
+                            count=count+1;
+                        }
+                 }
+            }
+            else
+            {
+                var length=curr.friends.length;
+                for(var i=0;i<length;i++)
+                 {
+                     if(curr.friends[i].nm===input)
+                        {
+                            count=count+1;
+                        }
+                 }
+            }
+   });
+
+//COMMAND TO FILTER FRIENDS USING EMAIL OR NICKNAME OR NAME FINISHED....
+
+//comd.command('friends-filter')
 
   
   
