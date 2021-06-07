@@ -7,6 +7,8 @@ const frnds=mongoose.Schema({nm:{type:String},
                              eml:{type:String}
                             });
 
+
+
 const SignSchema=mongoose.Schema({naam:{type:String,required:true},
                                                 email:{type:String,required:true},
                                                 password:{type:String,required:true},
@@ -15,6 +17,9 @@ const SignSchema=mongoose.Schema({naam:{type:String,required:true},
                                                 requests:{type:[frnds],default:[{nm:'pooja sharma',nick:'@pooja',eml:'pooja@gmail.com'}]}
                                             });
 module.exports=mongoose.model('Signup',SignSchema);
+
+
+
 
 
 
