@@ -4,7 +4,7 @@ const posts=mongoose.Schema({id:{type:Number,required:true},
     nickname:{type:String,required:true},
     date:{type:String,required:true},
     message:{type:String},
-    like:{type:Number,required:true,default:0},
+    like:{type:[String],required:true,default:[]},
     dislike:{type:Number,required:true,default:0},
    });
 

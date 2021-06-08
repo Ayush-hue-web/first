@@ -17,9 +17,10 @@ var currUser=()=>{
     const d=jwt.verify(tk,'friendly');
     return d.email;
 }
-
+//QUESTIONS ASKED DURING UNFRIEND
 const unq=[{type:'input',name:'choice',message:'ARE YOU SURE? yes/no : '}]
 
+//QUESTIONS ASKED DURING SIGNUP
 const signques=[{
     type:'input',
     name:'naam',
@@ -44,7 +45,7 @@ const signques=[{
        name:'nick',
        message:"please enter your nickname:"
     }];
-
+//QUESTIONS ASKED DURING LOGIN
     const login=[
         {
             type:'input',
@@ -65,7 +66,9 @@ mongoose.connect('mongodb://127.0.0.1:27017/Friendly',{useNewUrlParser:true,useC
 
 //SIGNUP COMMAND BEGINS....
 comd.command('signup').action(()=>{                                                         //SIGNUP BLOCK STARTS....              
-        inq.prompt(signques).then((answers)=>
+inq.prompt(signques).then((answers)=>
+    {
+            if(answers.confirm===answers.pass)
         {
             signup.findOne({ email:answers.email},(error,arr)=>
             {  
@@ -100,7 +103,11 @@ comd.command('signup').action(()=>{                                             
                 }
 
             });
-             
+        } 
+        else 
+         {
+             console.log("INCORRECT CONFIRMATION PASSWORD");
+         }
         
         }); //block to provide credentials finish.signques prompt then finish.
         
@@ -339,7 +346,7 @@ comd.command('show_profile <input>').action((input)=>
                {
                    for(var j=0;j<ct;j++)
                     {
-                        if(arr.friends[i]===found.friends[j])
+                        if(arr.friends[i].nick===found.friends[j].nick)
                         {
                             mfri=mfri+1;
                         }
@@ -434,14 +441,33 @@ comd.command('post-like <id>').action((id)=>
         var idi=Number(id);
        psts.findOne({id:idi},(error,found)=>
        {
+           
+
              if(found!=null)
               {
-                  found.like=found.like+1;
-                  psts.findOneAndUpdate({id:idi},{like:found.like},()=>
+                var got=0;
+                for(var x=0;x<found.like.length;x++)
+                   {
+                       if(found.like[x]===arr.nickname)
+                         {
+                             got=1;
+                             break;
+                         }
+                   }
+                  if(got===0)
                   {
-                       console.log("");
-                  });
-              }
+                     found.like.push(arr.nickname);
+                     var ct=found.like.length;
+                     psts.findOneAndUpdate({id:idi},{like:found.like},()=>
+                       {
+                          console.log(`Disliked Post:\n ${found.nickname} \n ${found.message}\n ${found.date} \n Likes : ${ct}` );
+                       });
+                  }
+                  else
+                    {
+                        console.log("");
+                    }
+                }
        });
     });
   });
@@ -450,22 +476,42 @@ comd.command('post-like <id>').action((id)=>
 //POST DISLIKE COMMAND  BEGINS....
 comd.command('post-dislike <id>').action((id)=>
 {
-  curr=currUser();
-  signup.findOne({email:curr},(error,arr)=>
-  {
-      var idi=Number(id);
-     psts.findOne({id:idi},(error,found)=>
-     {
-           if(found!=null)
-            {
-                found.like=found.like-1;
-                psts.findOneAndUpdate({id:idi},{like:found.like},()=>
-                {
-                     console.log("");
-                });
-            }
-     });
-  });
+    curr=currUser();
+    signup.findOne({email:curr},(error,arr)=>
+    {
+        var idi=Number(id);
+       psts.findOne({id:idi},(error,found)=>
+       {
+           
+
+             if(found!=null)
+              {
+                var got=0;
+                var x;
+                for(x=0;x<found.like.length;x++)
+                   {
+                       if(found.like[x]===arr.nickname)
+                         {
+                             got=1;
+                             break;
+                         }
+                   }
+                  if(got===1)
+                  {
+                     found.like.splice(x,1);
+                     var ct=found.like.length;
+                     psts.findOneAndUpdate({id:idi},{like:found.like},()=>
+                       {
+                          console.log(`Liked Post:\n ${found.nickname} \n ${found.message}\n ${found.date} \n Likes : ${ct}` );
+                       });
+                  }
+                  else
+                    {
+                        console.log("");
+                    }
+                }
+       });
+    });
 });
 //POST DISLIKE COMMAND  FINISHED....
   
