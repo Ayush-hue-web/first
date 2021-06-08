@@ -31,12 +31,12 @@ const signques=[{
         message:"please enter your email:"
     },
     {
-        type:'input',
+        type:'password',
         name:'pass',
         message:"please enter your password:"
     },
     {
-        type:'input',
+        type:'password',
         name:'confirm',
         message:"please confirm your password:"
     },
@@ -53,7 +53,7 @@ const signques=[{
             message:'USERNAME:'
         },
         {
-          type:'input',
+          type:'password',
           name:'pwd',
           message:'PASSWORD:'
         }
@@ -542,6 +542,108 @@ comd.command('post-dislike <id>').action((id)=>
        console.log("LOGOUT SUCCESSFUL");
     });
 //LOGOUT COMMAND FINISHED.....
+
+//COMMAND TO SEE POSTS BEGINS....
+  comd.command('post-mine').action(()=>
+   {
+      curr=currUser();
+      signup.findOne({email:curr},(error,arr)=>
+       {
+           if(arr!==null)
+             {
+                 psts.find({nickname:arr.nickname},(error,found)=>
+                   {
+                       if(found!==null)
+                          {
+                              for(var x=0;x<found.length;x++)
+                                {
+                                  console.log(`${found[x].nickname}\n${found[x].message}\n Likes:${found[x].like.length}\n Post id:${found[x].id} \n Date:${found[x].date} \n\n`);
+                                }
+                          }
+                   });
+             }
+       })
+   }) ;
+
+  comd.command('post').action(()=>
+   {
+      curr=currUser();
+      signup.findOne({email:curr},(error,arr)=>
+       {
+           if(arr!==null)
+             {
+                for(var x=1;x<16;x++)
+                {
+                 psts.findOne({id:x},(error,found)=>
+                   {
+                       if(found!==null)
+                          {
+                              console.log(`${found.nickname}\n${found.message}\n Likes:${found.like.length}\n Post id:${found.id} \n Date:${found.date} \n\n`);
+                                
+                          }
+                   });
+                }
+             }
+       })
+   }) ;
+
+   comd.command('post-count <lmt>').action((lmt)=>
+   {
+       var l=Number(lmt);
+       if(l>15)
+        {
+            l=15;
+        }
+      curr=currUser();
+      signup.findOne({email:curr},(error,arr)=>
+       {
+           if(arr!==null)
+             {
+                for(var x=l;x>=1;x--)
+                {
+                 psts.findOne({id:x},(error,found)=>
+                   {
+                       if(found!==null)
+                          {
+                              console.log(`${found.nickname}\n${found.message}\n Likes:${found.like.length}\n Post id:${found.id} \n Date:${found.date} \n\n`);
+                                
+                          }
+                   });
+                }
+             }
+       })
+   }) ;
+
+   comd.command('post-friend <frndl>').action((frndl)=>
+   {
+      var frnd=frndl.toString();
+      var list=frnd.split(',');
+      var cnt=list.length;
+      curr=currUser();
+      signup.findOne({email:curr},(error,arr)=>
+       {
+           if(arr!==null)
+             {
+                 for(var z=0;z<cnt;z++)
+                  {
+                      var prs='@'+list[z];
+                      psts.find({nickname:prs},(error,found)=>
+                   {
+                       if(found!==null)
+                          {
+                              for(var x=0;x<found.length;x++)
+                                {
+                                  console.log(`${found[x].nickname}\n${found[x].message}\n Likes:${found[x].like.length}\n Post id:${found[x].id} \n Date:${found[x].date} \n\n`);
+                                }
+                          }
+                   });
+                  }
+                 
+             }
+       })
+   }) ;
+
+//COMMAND TO SEE POSTS FINISHED....
 
 
 comd.parse(process.argv);
