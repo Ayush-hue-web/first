@@ -6,7 +6,7 @@ function getvalue(){
     n2=document.getElementById('n2').value;
     n1=Number(n1);
     n2=Number(n2);
-    n3=Number(n3);
+    
 }
 function display(){
       document.getElementById('n1').value="";
